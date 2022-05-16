@@ -53,11 +53,11 @@ re-evaluated if a new collector becomes active or is dropped).
 
 Setting aside the callsite registration process, what remains is the rest of the
 methods defined on the `Collect` trait, for example, `new_span` and `exit`.
-These methods are called again and again as code paths that hit those spans are
-entered. A concrete implementation of the `Collect` needs to decide what they
-want to do when these tracing events happen (here I'm using the word "event" in
-a general sense). For example, the implementation may want to log to stdout when
-a span is entered, and again when it's exited.
+These methods are called[^1] again and again as code paths that hit those spans
+are entered. A concrete implementation of the `Collect` needs to decide what
+they want to do when these tracing events happen (here I'm using the word
+"event" in a general sense). For example, the implementation may want to log to
+stdout when a span is entered, and again when it's exited.
 
 It's completely up to the implementor of the `Collect` impl what it is that they
 want to do, and this will vary a lot by use-case. However, one common thing
@@ -80,3 +80,13 @@ TL;DR
   implementations to be used at the same time. This means that you can have one
   `Subscribe` impl that outputs a subset of tracing events to stdout, and
   another that sends another subset as JSON to a socket, for example.
+
+
+[^1]: How does tracing know which Collect impl should be invoked? For this, we
+    use the dispatcher. In the docs' own words, it "is responsible for
+    forwarding trace data from the instrumentation points that generate it to
+    the collector that collects it." The default collector does nothing, so in
+    order for your traces to be used, you must tell the dispatcher to set a
+    different collector, either globally, or for the current thread. For more
+    details, please refer to the [dispatch module
+    docs](https://tracing-rs.netlify.app/tracing_core/dispatch/index.html).
